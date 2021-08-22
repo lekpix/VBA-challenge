@@ -1,0 +1,105 @@
+Sub stkmkt():
+For Each ws In Worksheets
+
+    Dim ticker, GrtTicker, GrtTickerDec, GrtTickerInc As String
+    Dim openval, closval, diffval, stkvol, printint, MaxStkVol  As LongLong
+    Dim GrtPerDec, GrtPerInc As Double
+    Dim rowindex, column As Integer
+    
+    column = 1
+    rowindex = 2
+    printint = 2
+    
+    'Assigning Header
+    ws.Cells(1, 10).Value = "Ticker"
+    ws.Cells(1, 11).Value = "YearlyChange"
+    ws.Cells(1, 12).Value = "PercentageChange"
+    ws.Cells(1, 13).Value = "TotalStockVolume"
+ 
+    openval = ws.Cells(rowindex, 3).Value 'First opening value
+    stkvol = 0 'Cells(2, 7).Value 'First Stock Volume
+    LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row 'Calculating the last row number
+  
+    ' Loop through rows in the column
+    For i = 2 To LastRow
+       ' Searches for when the value of the next cell is different than that of the current cell
+        If ws.Cells(i + 1, column).Value <> ws.Cells(i, column).Value Then
+            ticker = ws.Cells(i, column).Value
+            ws.Cells(printint, 10).Value = ticker 'Assigning Ticker
+            closval = ws.Cells(i, 6).Value 'Assigning Closing value
+            diffval = closval - openval 'Calculating Yearly Change
+            ws.Cells(printint, 11).Value = diffval   'Assigning YearlyChange
+         ' highlight positive change in green and negative change in red.
+            If diffval < 0 Then
+                ws.Cells(printint, 11).Interior.ColorIndex = 3 'Red
+            ElseIf diffval > 0 Then
+                ws.Cells(printint, 11).Interior.ColorIndex = 4 'Green
+            End If
+             'Checking if opening price is zero
+            If openval <> 0 Then
+                per_change = (diffval / openval)
+            Else
+                per_change = diffval
+            End If
+            ws.Cells(printint, 12).Value = per_change 'Assigning PercentageChange
+            ws.Cells(printint, 12).NumberFormat = "0.00%" 'Formatting to Percentage
+                
+            stkvol = stkvol + ws.Cells(i, 7).Value 'Adding the last row of Stock volume
+            openval = ws.Cells(i + 1, 3).Value
+            ws.Cells(printint, 13).Value = stkvol 'Assigning Total stock volume
+            stkvol = 0 'Reseting the stock volume for another ticker
+            printint = printint + 1
+        Else
+            stkvol = stkvol + ws.Cells(i, 7).Value 'Adding Stock volume
+        End If
+    Next i
+ 
+  '################Greatest % increase", "Greatest % decrease" and "Greatest total volume".#####################
+  
+    'Assigning Headers
+    ws.Cells(1, 16).Value = "Ticker"
+    ws.Cells(1, 17).Value = "Value"
+    ws.Cells(2, 15).Value = "Greatest % increase"
+    ws.Cells(3, 15).Value = "Greatest % decrease"
+    ws.Cells(4, 15).Value = "Greatest total volume"
+    
+    LastRowStkVol = ws.Cells(Rows.Count, 13).End(xlUp).Row 'Calculating the last row number of Stock Volume Column
+    
+    GrtPerInc = Cells(2, 12).Value
+    GrtPerDec = Cells(2, 12).Value
+    MaxStkVol = ws.Cells(2, 13).Value
+    For j = 2 To LastRowStkVol
+        'Finding Greatest Stock Volume
+        If MaxStkVol < ws.Cells(j, 13).Value Then
+            MaxStkVol = ws.Cells(j, 13).Value
+            GrtTicker = ws.Cells(j, 10).Value
+        End If
+        'Finding Greatest Percentage increase
+        If GrtPerInc < ws.Cells(j, 12).Value Then
+            GrtPerInc = ws.Cells(j, 12).Value
+            GrtTickerInc = ws.Cells(j, 10).Value
+        End If
+        'Finding Greatest Percentage decrease
+        If GrtPerDec > ws.Cells(j, 12).Value Then
+            GrtPerDec = ws.Cells(j, 12).Value
+            GrtTickerDec = ws.Cells(j, 10).Value
+        End If
+    Next j
+    'Assigning Volume n Ticker
+    ws.Cells(4, 16).Value = GrtTicker
+    ws.Cells(4, 17).Value = MaxStkVol
+    'Assigning Percentage increase n ticker
+    ws.Cells(2, 16).Value = GrtTickerInc
+    ws.Cells(2, 17).Value = GrtPerInc
+    ws.Cells(2, 17).NumberFormat = "0.00%" 'Formatting to Percentage
+    'Assigning Percentage Decrease n ticker
+    ws.Cells(3, 16).Value = GrtTickerDec
+    ws.Cells(3, 17).Value = GrtPerDec
+    ws.Cells(3, 17).NumberFormat = "0.00%" 'Formatting to Percentage
+  
+Next ws
+End Sub
+
+
+
+
